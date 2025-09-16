@@ -1,0 +1,29 @@
+{
+  "name": "velocity-zones-dashboard",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Dashboard to ingest strength training rep samples, compute per-rep velocity, and segment them into training zones",
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@turbo/gen": "^2.0.14",
+    "turbo": "^2.0.14",
+    "prettier": "^3.3.3",
+    "@typescript-eslint/eslint-plugin": "^8.5.0",
+    "@typescript-eslint/parser": "^8.5.0",
+    "eslint": "^9.10.0",
+    "eslint-config-prettier": "^9.1.0",
+    "typescript": "^5.5.4"
+  },
+  "packageManager": "pnpm@9.9.0",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

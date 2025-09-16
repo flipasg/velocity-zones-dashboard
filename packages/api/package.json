@@ -1,0 +1,32 @@
+{
+  "name": "@velocity-zones/api",
+  "version": "0.1.0",
+  "description": "Node.js API backend with DDD + Hexagonal Architecture",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "lint": "eslint src/**/*.ts",
+    "test": "vitest",
+    "test:ui": "vitest --ui"
+  },
+  "dependencies": {
+    "@velocity-zones/shared": "workspace:*",
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17",
+    "@types/uuid": "^10.0.0",
+    "@types/node": "^22.5.4",
+    "typescript": "^5.5.4",
+    "tsx": "^4.19.0",
+    "vitest": "^2.0.5",
+    "supertest": "^7.0.0",
+    "@types/supertest": "^6.0.2"
+  }
+}
