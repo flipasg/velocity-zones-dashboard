@@ -55,11 +55,15 @@ class VelocityZonesApiServer {
     });
 
     // Swagger documentation
-    this.app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-      explorer: true,
-      customCss: '.swagger-ui .topbar { display: none }',
-      customSiteTitle: 'Velocity Zones API Documentation',
-    }));
+    this.app.use(
+      '/api/docs',
+      swaggerUi.serve,
+      swaggerUi.setup(swaggerSpec, {
+        explorer: true,
+        customCss: '.swagger-ui .topbar { display: none }',
+        customSiteTitle: 'Velocity Zones API Documentation',
+      })
+    );
 
     // Swagger JSON endpoint
     this.app.get('/api/docs.json', (req, res) => {
@@ -127,8 +131,12 @@ class VelocityZonesApiServer {
           const server = this.app.listen(this.port, () => {
             console.log(`🚀 Velocity Zones API Server started successfully!`);
             console.log(`📍 Server running at: http://localhost:${this.port}`);
-            console.log(`🏥 Health check: http://localhost:${this.port}/health`);
-            console.log(`📚 API base URL: http://localhost:${this.port}/api/v1`);
+            console.log(
+              `🏥 Health check: http://localhost:${this.port}/health`
+            );
+            console.log(
+              `📚 API base URL: http://localhost:${this.port}/api/v1`
+            );
             console.log(`📖 API docs: http://localhost:${this.port}/api/docs`);
             console.log(
               `🌍 Environment: ${process.env.NODE_ENV || 'development'}`

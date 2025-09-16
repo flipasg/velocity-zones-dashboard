@@ -49,7 +49,7 @@ export class DatabaseConfig {
             minVelocity: 0.0,
             maxVelocity: 0.3,
             color: '#ff4444',
-            description: 'Heavy resistance training zone'
+            description: 'Heavy resistance training zone',
           },
           {
             id: 'zone-power',
@@ -57,7 +57,7 @@ export class DatabaseConfig {
             minVelocity: 0.3,
             maxVelocity: 0.6,
             color: '#ffaa00',
-            description: 'Power development zone'
+            description: 'Power development zone',
           },
           {
             id: 'zone-speed-strength',
@@ -65,7 +65,7 @@ export class DatabaseConfig {
             minVelocity: 0.6,
             maxVelocity: 1.0,
             color: '#44ff44',
-            description: 'Speed-strength development zone'
+            description: 'Speed-strength development zone',
           },
           {
             id: 'zone-speed',
@@ -73,13 +73,16 @@ export class DatabaseConfig {
             minVelocity: 1.0,
             maxVelocity: 2.0,
             color: '#4444ff',
-            description: 'Maximum speed zone'
-          }
+            description: 'Maximum speed zone',
+          },
         ],
-        reps: []
+        reps: [],
       };
 
-      await fs.writeFile(DatabaseConfig.dbPath, JSON.stringify(defaultData, null, 2));
+      await fs.writeFile(
+        DatabaseConfig.dbPath,
+        JSON.stringify(defaultData, null, 2)
+      );
     }
 
     DatabaseConfig.initialized = true;

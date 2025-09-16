@@ -1,13 +1,13 @@
+import { GetRepsQuery } from '@velocity-zones/shared';
 import { RepEntity } from '../../domain/entities/RepEntity';
 import { RepRepository } from '../../domain/repositories/RepRepository';
-import { GetRepsQuery } from '@velocity-zones/shared';
 import { DatabaseConfig } from './DatabaseConfig';
 
 export class PersistentRepRepository extends RepRepository {
   async findAllAsync(): Promise<RepEntity[]> {
     const data = await DatabaseConfig.readData();
-    
-    return data.reps.map(rep => 
+
+    return data.reps.map((rep) =>
       RepEntity.fromPersistence(
         rep.id,
         rep.exerciseId,
@@ -20,8 +20,8 @@ export class PersistentRepRepository extends RepRepository {
 
   async findByIdAsync(id: string): Promise<RepEntity | null> {
     const data = await DatabaseConfig.readData();
-    const rep = data.reps.find(r => r.id === id);
-    
+    const rep = data.reps.find((r) => r.id === id);
+
     if (!rep) {
       return null;
     }
@@ -41,13 +41,13 @@ export class PersistentRepRepository extends RepRepository {
 
     // Apply filters if query is provided
     if (query.exerciseId) {
-      reps = reps.filter(rep => rep.exerciseId === query.exerciseId);
+      reps = reps.filter((rep) => rep.exerciseId === query.exerciseId);
     }
     if (query.startDate) {
-      reps = reps.filter(rep => new Date(rep.timestamp) >= query.startDate!);
+      reps = reps.filter((rep) => new Date(rep.timestamp) >= query.startDate!);
     }
     if (query.endDate) {
-      reps = reps.filter(rep => new Date(rep.timestamp) <= query.endDate!);
+      reps = reps.filter((rep) => new Date(rep.timestamp) <= query.endDate!);
     }
     if (query.offset) {
       reps = reps.slice(query.offset);
@@ -56,7 +56,7 @@ export class PersistentRepRepository extends RepRepository {
       reps = reps.slice(0, query.limit);
     }
 
-    return reps.map(rep => 
+    return reps.map((rep) =>
       RepEntity.fromPersistence(
         rep.id,
         rep.exerciseId,
@@ -69,17 +69,17 @@ export class PersistentRepRepository extends RepRepository {
 
   async saveAsync(rep: RepEntity): Promise<RepEntity> {
     const data = await DatabaseConfig.readData();
-    
+
     const repData = {
       id: rep.id,
       exerciseId: rep.exerciseId,
       velocity: rep.velocity,
       timestamp: rep.timestamp.toISOString(),
-      metadata: rep.metadata
+      metadata: rep.metadata,
     };
 
     // Check if rep already exists
-    const existingIndex = data.reps.findIndex(r => r.id === rep.id);
+    const existingIndex = data.reps.findIndex((r) => r.id === rep.id);
     if (existingIndex >= 0) {
       data.reps[existingIndex] = repData;
     } else {

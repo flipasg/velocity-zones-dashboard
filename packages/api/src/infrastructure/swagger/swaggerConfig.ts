@@ -6,7 +6,8 @@ const options: swaggerJSDoc.Options = {
     info: {
       title: 'Velocity Zones Dashboard API',
       version: '1.0.0',
-      description: 'API for managing velocity zones and exercise repetitions with clean architecture',
+      description:
+        'API for managing velocity zones and exercise repetitions with clean architecture',
       contact: {
         name: 'Velocity Zones Dashboard',
         url: 'https://github.com/flipasg/velocity-zones-dashboard',
