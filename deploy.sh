@@ -23,13 +23,13 @@ pnpm build
 
 # Deploy to production
 echo "🚀 Deploying to production..."
-vercel --prod
+DEPLOY_URL=$(vercel --prod --yes)
 
 echo "✅ Deployment complete!"
 echo ""
 echo "🎉 Your app is now live!"
-echo "🌐 Frontend: https://velocity-zones-dashboard.vercel.app"
-echo "📖 API docs: https://velocity-zones-dashboard.vercel.app/api/docs"
-echo "🔗 API endpoints: https://velocity-zones-dashboard.vercel.app/api/v1"
+echo "🌐 Frontend: $DEPLOY_URL"
+echo "📖 API docs: $DEPLOY_URL/api/docs"
+echo "🔗 API endpoints: $DEPLOY_URL/api/v1"
 echo ""
 echo "📝 Note: Using in-memory storage - data resets on cold starts"

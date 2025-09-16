@@ -12,10 +12,10 @@ import {
 } from './application/usecases/GetZonesUseCase';
 import { RepRepository } from './domain/repositories/RepRepository';
 import { VelocityZoneRepository } from './domain/repositories/VelocityZoneRepository';
-import { PersistentRepRepository } from './infrastructure/database/PersistentRepRepository';
-import { PersistentVelocityZoneRepository } from './infrastructure/database/PersistentVelocityZoneRepository';
 import { InMemoryRepRepository } from './infrastructure/database/InMemoryRepRepository';
 import { InMemoryVelocityZoneRepository } from './infrastructure/database/InMemoryVelocityZoneRepository';
+import { PersistentRepRepository } from './infrastructure/database/PersistentRepRepository';
+import { PersistentVelocityZoneRepository } from './infrastructure/database/PersistentVelocityZoneRepository';
 import { RepController } from './presentation/controllers/RepController';
 import { VelocityZoneController } from './presentation/controllers/VelocityZoneController';
 import {

@@ -27,8 +27,7 @@
     }
   ],
   "env": {
-    "NODE_ENV": "production",
-    "VITE_API_URL": "https://velocity-zones-dashboard.vercel.app"
+    "NODE_ENV": "production"
   },
   "functions": {
     "packages/api/src/index.ts": {
