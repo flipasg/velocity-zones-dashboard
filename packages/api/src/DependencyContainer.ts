@@ -12,8 +12,8 @@ import {
 } from './application/usecases/GetZonesUseCase';
 import { RepRepository } from './domain/repositories/RepRepository';
 import { VelocityZoneRepository } from './domain/repositories/VelocityZoneRepository';
-import { InMemoryRepRepository } from './infrastructure/database/InMemoryRepRepository';
-import { InMemoryVelocityZoneRepository } from './infrastructure/database/InMemoryVelocityZoneRepository';
+import { PersistentRepRepository } from './infrastructure/database/PersistentRepRepository';
+import { PersistentVelocityZoneRepository } from './infrastructure/database/PersistentVelocityZoneRepository';
 import { RepController } from './presentation/controllers/RepController';
 import { VelocityZoneController } from './presentation/controllers/VelocityZoneController';
 import {
@@ -44,14 +44,14 @@ export class DependencyContainer implements DependencyContainerInterface {
 
   public getRepRepository(): RepRepository {
     if (!this.repRepository) {
-      this.repRepository = new InMemoryRepRepository();
+      this.repRepository = new PersistentRepRepository();
     }
     return this.repRepository;
   }
 
   public getVelocityZoneRepository(): VelocityZoneRepository {
     if (!this.velocityZoneRepository) {
-      this.velocityZoneRepository = new InMemoryVelocityZoneRepository();
+      this.velocityZoneRepository = new PersistentVelocityZoneRepository();
     }
     return this.velocityZoneRepository;
   }

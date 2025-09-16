@@ -4,6 +4,25 @@ import { GetZonesUseCase } from '../../application/usecases/GetZonesUseCase';
 export class VelocityZoneController {
   constructor(private readonly getVelocityZonesUseCase: GetZonesUseCase) {}
 
+  /**
+   * @swagger
+   * /zones:
+   *   get:
+   *     summary: Get all velocity zones
+   *     tags: [Velocity Zones]
+   *     description: Retrieve all available velocity zones with their thresholds and colors
+   *     responses:
+   *       200:
+   *         description: List of velocity zones
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 $ref: '#/components/schemas/ZoneResponseDto'
+   *       500:
+   *         $ref: '#/components/responses/InternalServerError'
+   */
   public getZones = async (req: Request, res: Response): Promise<void> => {
     try {
       const result = await this.getVelocityZonesUseCase.executeAsync();
@@ -13,6 +32,32 @@ export class VelocityZoneController {
     }
   };
 
+  /**
+   * @swagger
+   * /zones/{id}:
+   *   get:
+   *     summary: Get velocity zone by ID
+   *     tags: [Velocity Zones]
+   *     description: Retrieve a specific velocity zone by its ID
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: The velocity zone ID
+   *     responses:
+   *       200:
+   *         description: Velocity zone details
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ZoneResponseDto'
+   *       404:
+   *         $ref: '#/components/responses/NotFound'
+   *       500:
+   *         $ref: '#/components/responses/InternalServerError'
+   */
   public getZoneById = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;

@@ -1,7 +1,10 @@
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
+import swaggerUi from 'swagger-ui-express';
 import { DependencyContainer } from './DependencyContainer';
+import { DatabaseConfig } from './infrastructure/database/DatabaseConfig';
+import { swaggerSpec } from './infrastructure/swagger/swaggerConfig';
 
 class VelocityZonesApiServer {
   private readonly app: express.Application;
@@ -49,6 +52,19 @@ class VelocityZonesApiServer {
         timestamp: new Date().toISOString(),
         version: process.env.npm_package_version || '1.0.0',
       });
+    });
+
+    // Swagger documentation
+    this.app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+      explorer: true,
+      customCss: '.swagger-ui .topbar { display: none }',
+      customSiteTitle: 'Velocity Zones API Documentation',
+    }));
+
+    // Swagger JSON endpoint
+    this.app.get('/api/docs.json', (req, res) => {
+      res.setHeader('Content-Type', 'application/json');
+      res.send(swaggerSpec);
     });
 
     // API routes
@@ -100,45 +116,56 @@ class VelocityZonesApiServer {
   }
 
   public async startAsync(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      try {
-        const server = this.app.listen(this.port, () => {
-          console.log(`🚀 Velocity Zones API Server started successfully!`);
-          console.log(`📍 Server running at: http://localhost:${this.port}`);
-          console.log(`🏥 Health check: http://localhost:${this.port}/health`);
-          console.log(`📚 API base URL: http://localhost:${this.port}/api/v1`);
-          console.log(
-            `🌍 Environment: ${process.env.NODE_ENV || 'development'}`
-          );
-          resolve();
-        });
+    try {
+      // Initialize database before starting server
+      console.log('🗄️ Initializing database...');
+      await DatabaseConfig.initialize();
+      console.log('✅ Database initialized successfully');
 
-        server.on('error', (error) => {
-          console.error('❌ Server startup error:', error);
+      return new Promise((resolve, reject) => {
+        try {
+          const server = this.app.listen(this.port, () => {
+            console.log(`🚀 Velocity Zones API Server started successfully!`);
+            console.log(`📍 Server running at: http://localhost:${this.port}`);
+            console.log(`🏥 Health check: http://localhost:${this.port}/health`);
+            console.log(`📚 API base URL: http://localhost:${this.port}/api/v1`);
+            console.log(`📖 API docs: http://localhost:${this.port}/api/docs`);
+            console.log(
+              `🌍 Environment: ${process.env.NODE_ENV || 'development'}`
+            );
+            resolve();
+          });
+
+          server.on('error', (error) => {
+            console.error('❌ Server startup error:', error);
+            reject(error);
+          });
+
+          // Graceful shutdown
+          process.on('SIGTERM', () => {
+            console.log('🛑 SIGTERM received, shutting down gracefully...');
+            server.close(() => {
+              console.log('✅ Server closed successfully');
+              process.exit(0);
+            });
+          });
+
+          process.on('SIGINT', () => {
+            console.log('🛑 SIGINT received, shutting down gracefully...');
+            server.close(() => {
+              console.log('✅ Server closed successfully');
+              process.exit(0);
+            });
+          });
+        } catch (error) {
+          console.error('❌ Server configuration error:', error);
           reject(error);
-        });
-
-        // Graceful shutdown
-        process.on('SIGTERM', () => {
-          console.log('🛑 SIGTERM received, shutting down gracefully...');
-          server.close(() => {
-            console.log('✅ Server closed successfully');
-            process.exit(0);
-          });
-        });
-
-        process.on('SIGINT', () => {
-          console.log('🛑 SIGINT received, shutting down gracefully...');
-          server.close(() => {
-            console.log('✅ Server closed successfully');
-            process.exit(0);
-          });
-        });
-      } catch (error) {
-        console.error('❌ Failed to start server:', error);
-        reject(error);
-      }
-    });
+        }
+      });
+    } catch (error) {
+      console.error('❌ Database initialization error:', error);
+      throw error;
+    }
   }
 }
 

@@ -9,6 +9,31 @@ export class RepController {
     private readonly getRepsUseCase: GetRepsUseCase
   ) {}
 
+  /**
+   * @swagger
+   * /reps:
+   *   post:
+   *     summary: Create a new rep
+   *     tags: [Reps]
+   *     description: Create a new exercise repetition with velocity tracking
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/CreateRepDto'
+   *     responses:
+   *       201:
+   *         description: Rep created successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/RepResponseDto'
+   *       400:
+   *         $ref: '#/components/responses/BadRequest'
+   *       500:
+   *         $ref: '#/components/responses/InternalServerError'
+   */
   public createRep = async (req: Request, res: Response): Promise<void> => {
     try {
       const createRepDto: CreateRepDto = req.body;
@@ -21,6 +46,63 @@ export class RepController {
     }
   };
 
+  /**
+   * @swagger
+   * /reps:
+   *   get:
+   *     summary: Get all reps
+   *     tags: [Reps]
+   *     description: Retrieve exercise repetitions with optional filtering
+   *     parameters:
+   *       - in: query
+   *         name: exerciseId
+   *         schema:
+   *           type: string
+   *         description: Filter by exercise ID
+   *       - in: query
+   *         name: startDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *         description: Filter by start date
+   *       - in: query
+   *         name: endDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *         description: Filter by end date
+   *       - in: query
+   *         name: zoneId
+   *         schema:
+   *           type: string
+   *         description: Filter by velocity zone ID
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 100
+   *         description: Limit number of results
+   *       - in: query
+   *         name: offset
+   *         schema:
+   *           type: integer
+   *           minimum: 0
+   *         description: Offset for pagination
+   *     responses:
+   *       200:
+   *         description: List of reps
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 $ref: '#/components/schemas/RepResponseDto'
+   *       400:
+   *         $ref: '#/components/responses/BadRequest'
+   *       500:
+   *         $ref: '#/components/responses/InternalServerError'
+   */
   public getReps = async (req: Request, res: Response): Promise<void> => {
     try {
       const query: GetRepsQuery = {
@@ -55,6 +137,32 @@ export class RepController {
     }
   };
 
+  /**
+   * @swagger
+   * /reps/{id}:
+   *   get:
+   *     summary: Get rep by ID
+   *     tags: [Reps]
+   *     description: Retrieve a specific exercise repetition by its ID
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: The rep ID
+   *     responses:
+   *       200:
+   *         description: Rep details
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/RepResponseDto'
+   *       404:
+   *         $ref: '#/components/responses/NotFound'
+   *       500:
+   *         $ref: '#/components/responses/InternalServerError'
+   */
   public getRepById = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
