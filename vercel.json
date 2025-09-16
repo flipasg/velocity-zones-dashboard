@@ -1,0 +1,42 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "packages/web/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    },
+    {
+      "src": "packages/api/src/index.ts",
+      "use": "@vercel/node",
+      "config": {
+        "maxDuration": 30
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "packages/api/src/index.ts"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "packages/web/dist/$1"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production",
+    "VITE_API_URL": "https://velocity-zones-dashboard.vercel.app"
+  },
+  "functions": {
+    "packages/api/src/index.ts": {
+      "memory": 256,
+      "maxDuration": 30
+    }
+  },
+  "buildCommand": "pnpm build",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "outputDirectory": "packages/web/dist"
+}

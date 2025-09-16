@@ -89,7 +89,7 @@ importers:
         version: 5.9.2
       vitest:
         specifier: ^2.0.5
-        version: 2.1.9(@types/node@22.18.4)(jsdom@25.0.1)
+        version: 2.1.9(@types/node@22.18.4)(jsdom@25.0.1(bufferutil@4.0.9))
 
   packages/shared:
     devDependencies:
@@ -101,7 +101,7 @@ importers:
         version: 5.9.2
       vitest:
         specifier: ^2.0.5
-        version: 2.1.9(@types/node@22.18.4)(jsdom@25.0.1)
+        version: 2.1.9(@types/node@22.18.4)(jsdom@25.0.1(bufferutil@4.0.9))
 
   packages/web:
     dependencies:
@@ -165,7 +165,7 @@ importers:
         version: 0.4.20(eslint@9.35.0)
       jsdom:
         specifier: ^25.0.0
-        version: 25.0.1
+        version: 25.0.1(bufferutil@4.0.9)
       typescript:
         specifier: ^5.5.4
         version: 5.9.2
@@ -174,7 +174,7 @@ importers:
         version: 5.4.20(@types/node@22.18.4)
       vitest:
         specifier: ^2.0.5
-        version: 2.1.9(@types/node@22.18.4)(jsdom@25.0.1)
+        version: 2.1.9(@types/node@22.18.4)(jsdom@25.0.1(bufferutil@4.0.9))
 
 packages:
 
@@ -1368,6 +1368,10 @@ packages:
   buffer@5.7.1:
     resolution: {integrity: sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ==}
 
+  bufferutil@4.0.9:
+    resolution: {integrity: sha512-WDtdLmJvAuNNPzByAYpRo2rF1Mmradw6gvWsQKf63476DDXmomT9zUiGypLcG4ibIM67vhAj8jJRdbmEws2Aqw==}
+    engines: {node: '>=6.14.2'}
+
   bytes@3.1.2:
     resolution: {integrity: sha512-/Nf7TyzTx6S3yRJObOAV7956r8cr2+Oj8AC5dt8wSP3BQAoeX58NoHyCU8P8zGkNXStjTSi6fzO6F0pBdcYbEg==}
     engines: {node: '>= 0.8'}
@@ -2322,6 +2326,10 @@ packages:
 
   no-case@2.3.2:
     resolution: {integrity: sha512-rmTZ9kz+f3rCvK2TD1Ue/oZlns7OGoIWP4fc3llxxRXlOkHKoWPPWJOfFYpITabSow43QJbRIoHQXtt10VldyQ==}
+
+  node-gyp-build@4.8.4:
+    resolution: {integrity: sha512-LA4ZjwlnUblHVgq0oBF3Jl/6h/Nvs5fzBLwdEF4nuxnFdsfajde4WfxtJr3CaiH+F6ewcIB/q4jQ4UzPyid+CQ==}
+    hasBin: true
 
   node-plop@0.26.3:
     resolution: {integrity: sha512-Cov028YhBZ5aB7MdMWJEmwyBig43aGL5WT4vdoB28Oitau1zZAcHUn8Sgfk9HM33TqhtLJ9PlM/O0Mv+QpV/4Q==}
@@ -4321,6 +4329,11 @@ snapshots:
       base64-js: 1.5.1
       ieee754: 1.2.1
 
+  bufferutil@4.0.9:
+    dependencies:
+      node-gyp-build: 4.8.4
+    optional: true
+
   bytes@3.1.2: {}
 
   cac@6.7.14: {}
@@ -5181,7 +5194,7 @@ snapshots:
     dependencies:
       argparse: 2.0.1
 
-  jsdom@25.0.1:
+  jsdom@25.0.1(bufferutil@4.0.9):
     dependencies:
       cssstyle: 4.6.0
       data-urls: 5.0.0
@@ -5202,7 +5215,7 @@ snapshots:
       whatwg-encoding: 3.1.1
       whatwg-mimetype: 4.0.0
       whatwg-url: 14.2.0
-      ws: 8.18.3
+      ws: 8.18.3(bufferutil@4.0.9)
       xml-name-validator: 5.0.0
     transitivePeerDependencies:
       - bufferutil
@@ -5353,6 +5366,9 @@ snapshots:
   no-case@2.3.2:
     dependencies:
       lower-case: 1.1.4
+
+  node-gyp-build@4.8.4:
+    optional: true
 
   node-plop@0.26.3:
     dependencies:
@@ -6110,7 +6126,7 @@ snapshots:
       '@types/node': 22.18.4
       fsevents: 2.3.3
 
-  vitest@2.1.9(@types/node@22.18.4)(jsdom@25.0.1):
+  vitest@2.1.9(@types/node@22.18.4)(jsdom@25.0.1(bufferutil@4.0.9)):
     dependencies:
       '@vitest/expect': 2.1.9
       '@vitest/mocker': 2.1.9(vite@5.4.20(@types/node@22.18.4))
@@ -6134,7 +6150,7 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 22.18.4
-      jsdom: 25.0.1
+      jsdom: 25.0.1(bufferutil@4.0.9)
     transitivePeerDependencies:
       - less
       - lightningcss
@@ -6188,7 +6204,9 @@ snapshots:
 
   wrappy@1.0.2: {}
 
-  ws@8.18.3: {}
+  ws@8.18.3(bufferutil@4.0.9):
+    optionalDependencies:
+      bufferutil: 4.0.9
 
   xml-name-validator@5.0.0: {}
 

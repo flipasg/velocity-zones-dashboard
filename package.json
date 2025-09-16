@@ -9,7 +9,10 @@
     "lint": "turbo lint",
     "test": "turbo test",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "vercel:build": "turbo build",
+    "vercel:dev": "vercel dev",
+    "vercel:deploy": "vercel --prod"
   },
   "devDependencies": {
     "@turbo/gen": "^2.0.14",

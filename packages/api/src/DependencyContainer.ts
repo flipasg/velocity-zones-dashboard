@@ -14,6 +14,8 @@ import { RepRepository } from './domain/repositories/RepRepository';
 import { VelocityZoneRepository } from './domain/repositories/VelocityZoneRepository';
 import { PersistentRepRepository } from './infrastructure/database/PersistentRepRepository';
 import { PersistentVelocityZoneRepository } from './infrastructure/database/PersistentVelocityZoneRepository';
+import { InMemoryRepRepository } from './infrastructure/database/InMemoryRepRepository';
+import { InMemoryVelocityZoneRepository } from './infrastructure/database/InMemoryVelocityZoneRepository';
 import { RepController } from './presentation/controllers/RepController';
 import { VelocityZoneController } from './presentation/controllers/VelocityZoneController';
 import {
@@ -44,14 +46,24 @@ export class DependencyContainer implements DependencyContainerInterface {
 
   public getRepRepository(): RepRepository {
     if (!this.repRepository) {
-      this.repRepository = new PersistentRepRepository();
+      // Use in-memory for production (Vercel serverless), file-based for local development
+      if (process.env.NODE_ENV === 'production') {
+        this.repRepository = new InMemoryRepRepository();
+      } else {
+        this.repRepository = new PersistentRepRepository();
+      }
     }
     return this.repRepository;
   }
 
   public getVelocityZoneRepository(): VelocityZoneRepository {
     if (!this.velocityZoneRepository) {
-      this.velocityZoneRepository = new PersistentVelocityZoneRepository();
+      // Use in-memory for production (Vercel serverless), file-based for local development
+      if (process.env.NODE_ENV === 'production') {
+        this.velocityZoneRepository = new InMemoryVelocityZoneRepository();
+      } else {
+        this.velocityZoneRepository = new PersistentVelocityZoneRepository();
+      }
     }
     return this.velocityZoneRepository;
   }
