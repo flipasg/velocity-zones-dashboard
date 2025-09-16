@@ -12,7 +12,8 @@
       "src": "packages/api/src/index.ts",
       "use": "@vercel/node",
       "config": {
-        "maxDuration": 30
+        "maxDuration": 30,
+        "memory": 256
       }
     }
   ],
@@ -28,12 +29,6 @@
   ],
   "env": {
     "NODE_ENV": "production"
-  },
-  "functions": {
-    "packages/api/src/index.ts": {
-      "memory": 256,
-      "maxDuration": 30
-    }
   },
   "buildCommand": "pnpm build",
   "installCommand": "pnpm install --frozen-lockfile",
