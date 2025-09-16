@@ -1,44 +1,155 @@
 import cors from 'cors';
-import express, { Application } from 'express';
+import express from 'express';
 import helmet from 'helmet';
-import { CreateRepUseCase } from './application/create-rep.use-case';
-import { GetZonesUseCase } from './application/get-zones.use-case';
-import { InMemoryRepRepository } from './infrastructure/in-memory-rep.repository';
-import { InMemoryVelocityZoneRepository } from './infrastructure/in-memory-velocity-zone.repository';
-import { RepController } from './interfaces/rep.controller';
-import { ZoneController } from './interfaces/zone.controller';
+import { DependencyContainer } from './DependencyContainer';
 
-const app: Application = express();
-const port = process.env.PORT || 3001;
+class VelocityZonesApiServer {
+  private readonly app: express.Application;
+  private readonly port: number;
+  private readonly dependencyContainer: DependencyContainer;
 
-// Middleware
-app.use(helmet());
-app.use(cors());
-app.use(express.json());
+  constructor(port: number = 3001) {
+    this.app = express();
+    this.port = port;
+    this.dependencyContainer = new DependencyContainer();
 
-// Repositories
-const repRepository = new InMemoryRepRepository();
-const zoneRepository = new InMemoryVelocityZoneRepository();
+    this.configureMiddleware();
+    this.configureRoutes();
+    this.configureErrorHandling();
+  }
 
-// Use Cases
-const createRepUseCase = new CreateRepUseCase(repRepository);
-const getZonesUseCase = new GetZonesUseCase(zoneRepository, repRepository);
+  private configureMiddleware(): void {
+    // Security middleware
+    this.app.use(helmet());
 
-// Controllers
-const repController = new RepController(createRepUseCase);
-const zoneController = new ZoneController(getZonesUseCase);
+    // CORS configuration
+    this.app.use(
+      cors({
+        origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+        credentials: true,
+      })
+    );
 
-// Routes
-app.post('/reps', (req, res) => repController.createRep(req, res));
-app.get('/zones', (req, res) => zoneController.getZones(req, res));
+    // Body parsing middleware
+    this.app.use(express.json({ limit: '10mb' }));
+    this.app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    // Request logging
+    this.app.use((req, res, next) => {
+      console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+      next();
+    });
+  }
+
+  private configureRoutes(): void {
+    // Health check endpoint
+    this.app.get('/health', (req, res) => {
+      res.status(200).json({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        version: process.env.npm_package_version || '1.0.0',
+      });
+    });
+
+    // API routes
+    const httpRoutes = this.dependencyContainer.getHttpRoutes();
+    const repController = this.dependencyContainer.getRepController();
+    const velocityZoneController =
+      this.dependencyContainer.getVelocityZoneController();
+
+    const apiRouter = httpRoutes.configureRoutes(
+      repController,
+      velocityZoneController
+    );
+    this.app.use('/api/v1', apiRouter);
+
+    // Catch-all route for undefined endpoints
+    this.app.use('*', (req, res) => {
+      res.status(404).json({
+        message: 'Resource not found',
+        code: 'NOT_FOUND',
+        statusCode: 404,
+        path: req.originalUrl,
+      });
+    });
+  }
+
+  private configureErrorHandling(): void {
+    // Global error handler
+    this.app.use(
+      (
+        error: Error,
+        req: express.Request,
+        res: express.Response,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        _next: express.NextFunction
+      ) => {
+        console.error('Global error handler:', error);
+
+        // Don't send error details in production
+        const isDevelopment = process.env.NODE_ENV === 'development';
+
+        res.status(500).json({
+          message: 'Internal server error',
+          code: 'INTERNAL_ERROR',
+          statusCode: 500,
+          ...(isDevelopment && { details: error.message, stack: error.stack }),
+        });
+      }
+    );
+  }
+
+  public async startAsync(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        const server = this.app.listen(this.port, () => {
+          console.log(`🚀 Velocity Zones API Server started successfully!`);
+          console.log(`📍 Server running at: http://localhost:${this.port}`);
+          console.log(`🏥 Health check: http://localhost:${this.port}/health`);
+          console.log(`📚 API base URL: http://localhost:${this.port}/api/v1`);
+          console.log(
+            `🌍 Environment: ${process.env.NODE_ENV || 'development'}`
+          );
+          resolve();
+        });
+
+        server.on('error', (error) => {
+          console.error('❌ Server startup error:', error);
+          reject(error);
+        });
+
+        // Graceful shutdown
+        process.on('SIGTERM', () => {
+          console.log('🛑 SIGTERM received, shutting down gracefully...');
+          server.close(() => {
+            console.log('✅ Server closed successfully');
+            process.exit(0);
+          });
+        });
+
+        process.on('SIGINT', () => {
+          console.log('🛑 SIGINT received, shutting down gracefully...');
+          server.close(() => {
+            console.log('✅ Server closed successfully');
+            process.exit(0);
+          });
+        });
+      } catch (error) {
+        console.error('❌ Failed to start server:', error);
+        reject(error);
+      }
+    });
+  }
+}
+
+// Default export
+const server = new VelocityZonesApiServer();
+
+// Auto-start for development
+server.startAsync().catch((error) => {
+  console.error('❌ Failed to start Velocity Zones API:', error);
+  process.exit(1);
 });
 
-app.listen(port, () => {
-  console.log(`🚀 API server running on port ${port}`);
-});
-
-export default app;
+export { VelocityZonesApiServer };
+export default VelocityZonesApiServer;
