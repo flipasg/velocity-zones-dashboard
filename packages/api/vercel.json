@@ -1,0 +1,12 @@
+{
+  "installCommand": "pnpm install --frozen-lockfile --prod=false --ignore-scripts",
+  "buildCommand": "pnpm -w build --filter=@velocity-zones/api",
+  "devCommand": "pnpm -w dev --filter=@velocity-zones/api",
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/src/index"
+    }
+  ]
+}

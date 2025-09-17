@@ -175,16 +175,62 @@ class VelocityZonesApiServer {
       throw error;
     }
   }
+
+  // Method to expose the Express app for serverless deployment
+  public getApp(): express.Application {
+    return this.app;
+  }
+
+  // Initialize for serverless without starting the server
+  public async initializeForServerless(): Promise<void> {
+    try {
+      console.log('🗄️ Initializing database for serverless...');
+      await DatabaseConfig.initialize();
+      console.log('✅ Database initialized successfully');
+    } catch (error) {
+      console.error('❌ Database initialization error:', error);
+      throw error;
+    }
+  }
 }
 
-// Default export
+// For Vercel serverless functions
+/* eslint-disable @typescript-eslint/no-explicit-any */
+let app: any = null;
+
+async function getApp() {
+  if (!app) {
+    const server = new VelocityZonesApiServer();
+    await server.initializeForServerless();
+    app = server.getApp();
+  }
+  return app;
+}
+
+// Vercel serverless function handler
+export async function handler(req: any, res: any) {
+  try {
+    const expressApp = await getApp();
+    return expressApp(req, res);
+  } catch (error) {
+    console.error('Error initializing app:', error);
+    if (res && res.status) {
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+// Default export for standalone server
 const server = new VelocityZonesApiServer();
 
-// Auto-start for development
-server.startAsync().catch((error) => {
-  console.error('❌ Failed to start Velocity Zones API:', error);
-  process.exit(1);
-});
+// Auto-start for development (only if not in production and not in Vercel)
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+  server.startAsync().catch((error) => {
+    console.error('❌ Failed to start Velocity Zones API:', error);
+    process.exit(1);
+  });
+}
 
 export { VelocityZonesApiServer };
-export default VelocityZonesApiServer;
+export default server;
