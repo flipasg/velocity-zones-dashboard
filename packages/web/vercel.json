@@ -1,0 +1,5 @@
+{
+  "installCommand": "pnpm -w install --frozen-lockfile",
+  "buildCommand": "pnpm -w turbo run build --filter=@velocity-zones/web",
+  "outputDirectory": "dist"
+}

@@ -2,7 +2,8 @@
 set -euo pipefail
 
 PACKAGE_DIR="$(cd "$(dirname "$0")" && pwd)"
-cd "$PACKAGE_DIR"
+REPO_ROOT="$(cd "$PACKAGE_DIR/../.." && pwd)"
+cd "$REPO_ROOT"
 
 VERCEL_PROJECT="velocity-zones-dashboard-api"
 
@@ -10,14 +11,6 @@ if ! command -v vercel >/dev/null 2>&1; then
   echo "❌ Vercel CLI is not installed. Installing globally..."
   npm install -g vercel
 fi
-
-PACKAGE_NAME="@velocity-zones/api"
-
-echo "📦 Building $PACKAGE_NAME..."
-pnpm build
-
-echo "🔗 Ensuring Vercel project link (project: $VERCEL_PROJECT)..."
-vercel link --yes --project "$VERCEL_PROJECT" --cwd "$PACKAGE_DIR" >/dev/null
 
 REQUESTED_MODE="default"
 CLI_EXTRA_ARGS=()
@@ -43,24 +36,24 @@ if [[ "$REQUESTED_MODE" == "default" ]]; then
   REQUESTED_MODE="prod"
 fi
 
-CLI_ARGS=()
-if [[ ${#CLI_EXTRA_ARGS[@]} -gt 0 ]]; then
-  CLI_ARGS+=("${CLI_EXTRA_ARGS[@]}")
-fi
+echo "🔗 Ensuring Vercel project link (project: $VERCEL_PROJECT)..."
+vercel link --yes --project "$VERCEL_PROJECT" --cwd "$PACKAGE_DIR" >/dev/null
+
+echo "📦 Installing workspace deps at repo root (dev deps included)..."
+pnpm -w install --frozen-lockfile --prod=false
+
+echo "🔨 Building workspace targets for @velocity-zones/api..."
+pnpm -w turbo run build --filter=@velocity-zones/api
+
+echo "🏗️  Creating prebuilt output with Vercel (local build)..."
+vercel build --cwd "$PACKAGE_DIR"
 
 if [[ "$REQUESTED_MODE" == "prod" ]]; then
-  CLI_ARGS+=(--prod)
-  echo "🌐 Deploying to Vercel (production)..."
+  echo "🌐 Deploying prebuilt output to Vercel (production)..."
+  vercel deploy --yes --prebuilt --prod --cwd "$PACKAGE_DIR" "${CLI_EXTRA_ARGS[@]}"
 else
-  REQUESTED_MODE="preview"
-  echo "🌐 Deploying to Vercel (preview)..."
-fi
-
-if [[ ${#CLI_ARGS[@]} -gt 0 ]]; then
-  echo "   Passing through additional args: ${CLI_ARGS[*]}"
-  vercel deploy --yes --cwd "$PACKAGE_DIR" "${CLI_ARGS[@]}"
-else
-  vercel deploy --yes --cwd "$PACKAGE_DIR"
+  echo "🌐 Deploying prebuilt output to Vercel (preview)..."
+  vercel deploy --yes --prebuilt --cwd "$PACKAGE_DIR" "${CLI_EXTRA_ARGS[@]}"
 fi
 
 echo "✅ API deployment completed!"
