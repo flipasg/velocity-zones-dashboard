@@ -1,4 +1,15 @@
 {
   "installCommand": "pnpm -w install --frozen-lockfile --prod=false",
-  "buildCommand": "echo 'skip build'"
+  "buildCommand": "echo 'skip build'",
+  "functions": {
+    "api/index.ts": {
+      "maxDuration": 10
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api"
+    }
+  ]
 }
