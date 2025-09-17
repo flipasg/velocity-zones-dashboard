@@ -2,8 +2,14 @@
   "installCommand": "pnpm -w install --frozen-lockfile --prod=false",
   "buildCommand": "echo 'skip build'",
   "functions": {
-    "api/index.ts": { "maxDuration": 10 },
-    "api/[...path].ts": { "maxDuration": 10 }
+    "api/index.ts": {
+      "runtime": "nodejs20.x",
+      "maxDuration": 10
+    },
+    "api/[...path].ts": {
+      "runtime": "nodejs20.x",
+      "maxDuration": 10
+    }
   },
   "routes": [
     { "src": "/api$", "dest": "/api/index.ts" },

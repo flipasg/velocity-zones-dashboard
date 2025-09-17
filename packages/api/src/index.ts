@@ -11,6 +11,70 @@ function createApp() {
   const app = express();
   const dependencyContainer = new DependencyContainer();
 
+  // Normalize Vercel catch-all routing so Express sees the intended path
+  app.use((req, _res, next) => {
+    const query = req.query as Record<string, unknown> | undefined;
+    if (!query) {
+      next();
+      return;
+    }
+
+    const catchAll = (query.path ?? (query as Record<string, unknown>)['...path']) as
+      | string
+      | string[]
+      | undefined;
+
+    if (!catchAll) {
+      next();
+      return;
+    }
+
+    const segments = Array.isArray(catchAll)
+      ? catchAll
+      : catchAll.split('/');
+
+    const normalizedPath = `/${segments
+      .filter(Boolean)
+      .map((segment) => decodeURIComponent(segment))
+      .join('/')}`;
+
+    delete (query as Record<string, unknown>)['path'];
+    delete (query as Record<string, unknown>)['...path'];
+
+    const searchParams = new URLSearchParams();
+    for (const [key, value] of Object.entries(query)) {
+      if (value === undefined || value === null) continue;
+
+      if (Array.isArray(value)) {
+        for (const entry of value) {
+          searchParams.append(key, String(entry));
+        }
+      } else {
+        searchParams.append(key, String(value));
+      }
+    }
+
+    const search = searchParams.toString();
+    req.url = `${normalizedPath}${search ? `?${search}` : ''}`;
+    req.originalUrl = req.url;
+
+    next();
+  });
+
+  // One-time DB init on first request (serverless safe)
+  let dbInitialized = false;
+  app.use(async (_req, _res, next) => {
+    if (!dbInitialized) {
+      try {
+        await DatabaseConfig.initialize();
+        dbInitialized = true;
+      } catch (err) {
+        return next(err);
+      }
+    }
+    next();
+  });
+
   // Basic middleware
   app.use(helmet());
   app.use(
@@ -23,13 +87,13 @@ function createApp() {
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
   // Logging
-  app.use((req, res, next) => {
+  app.use((req, _res, next) => {
     console.log(`${req.method} ${req.path}`);
     next();
   });
 
   // Routes
-  app.get('/health', (req, res) => {
+  app.get('/health', (_req, res) => {
     res.json({
       status: 'healthy',
       timestamp: new Date().toISOString(),
@@ -46,7 +110,7 @@ function createApp() {
     })
   );
 
-  app.get('/docs.json', (req, res) => {
+  app.get('/docs.json', (_req, res) => {
     res.json(swaggerSpec);
   });
 
@@ -74,9 +138,9 @@ function createApp() {
   app.use(
     (
       error: Error,
-      req: express.Request,
+      _req: express.Request,
       res: express.Response,
-      next: express.NextFunction
+      _next: express.NextFunction
     ) => {
       console.error('Error:', error);
       res.status(500).json({
@@ -91,41 +155,15 @@ function createApp() {
   return app;
 }
 
-// Cached app instance for serverless
-let cachedApp: express.Application | null = null;
-let dbInitialized = false;
+// Export the Express app as default for Vercel Express runtime
+const app = createApp();
+export default app;
 
-async function getApp() {
-  if (!dbInitialized) {
-    await DatabaseConfig.initialize();
-    dbInitialized = true;
-  }
-
-  if (!cachedApp) {
-    cachedApp = createApp();
-  }
-
-  return cachedApp;
-}
-
-// Vercel serverless handler - this is what [...path].ts should import
-export default async function handler(req: any, res: any) {
-  try {
-    const app = await getApp();
-    return app(req, res);
-  } catch (error) {
-    console.error('Handler error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-}
-
-// Local development server
+// Local development server (not on Vercel)
 if (!process.env.VERCEL) {
   const PORT = process.env.PORT || 3001;
-
   DatabaseConfig.initialize()
     .then(() => {
-      const app = createApp();
       app.listen(PORT, () => {
         console.log(`🚀 Server running at http://localhost:${PORT}`);
         console.log(`📖 Docs at http://localhost:${PORT}/docs`);
