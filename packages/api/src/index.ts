@@ -9,6 +9,70 @@ import { swaggerSpec } from './infrastructure/swagger/swaggerConfig';
 const app = express();
 const dependencyContainer = new DependencyContainer();
 
+// Normalize Vercel catch-all query (?path=...)
+app.use((req, _res, next) => {
+  const query = req.query as Record<string, unknown> | undefined;
+  if (!query) {
+    next();
+    return;
+  }
+
+  const raw = (query.path ?? (query as Record<string, unknown>)['...path']) as
+    | string
+    | string[]
+    | undefined;
+
+  if (!raw) {
+    next();
+    return;
+  }
+
+  const segments = Array.isArray(raw) ? raw : raw.split('/');
+  const normalizedPath = `/${segments
+    .filter(Boolean)
+    .map((segment) => decodeURIComponent(segment))
+    .join('/')}`;
+
+  delete (query as Record<string, unknown>)['path'];
+  delete (query as Record<string, unknown>)['...path'];
+
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value === undefined || value === null) continue;
+
+    if (Array.isArray(value)) {
+      for (const entry of value) {
+        searchParams.append(key, String(entry));
+      }
+    } else {
+      searchParams.append(key, String(value));
+    }
+  }
+
+  const search = searchParams.toString();
+  req.url = `${normalizedPath}${search ? `?${search}` : ''}`;
+  req.originalUrl = req.url;
+
+  next();
+});
+
+// Ensure the in-memory database is initialised for the first request
+let dbInitialised = false;
+app.use(async (_req, _res, next) => {
+  if (dbInitialised) {
+    next();
+    return;
+  }
+
+  try {
+    await DatabaseConfig.initialize();
+    dbInitialised = true;
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Core middleware
 app.use(helmet());
 app.use(
