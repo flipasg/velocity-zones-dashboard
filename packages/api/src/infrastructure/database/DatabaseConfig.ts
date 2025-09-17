@@ -1,6 +1,20 @@
 import fs from 'fs/promises';
 import path from 'path';
 
+const DEFAULT_DATA_DIR = path.join(process.cwd(), 'data');
+
+function resolveDataDir(): string {
+  if (process.env.API_DATA_DIR && process.env.API_DATA_DIR.trim().length > 0) {
+    return process.env.API_DATA_DIR;
+  }
+
+  if (process.env.VERCEL) {
+    return path.join('/tmp', 'velocity-zones-data');
+  }
+
+  return DEFAULT_DATA_DIR;
+}
+
 export interface DatabaseSchema {
   zones: {
     id: string;
@@ -20,11 +34,18 @@ export interface DatabaseSchema {
 }
 
 export class DatabaseConfig {
-  private static dbPath = path.join(process.cwd(), 'data', 'db.json');
+  private static dbPath: string | null = null;
   private static initialized = false;
 
-  public static async ensureDataDirectory(): Promise<void> {
-    const dataDir = path.dirname(DatabaseConfig.dbPath);
+  private static getDbPath(): string {
+    if (!DatabaseConfig.dbPath) {
+      DatabaseConfig.dbPath = path.join(resolveDataDir(), 'db.json');
+    }
+    return DatabaseConfig.dbPath;
+  }
+
+  private static async ensureDataDirectory(): Promise<void> {
+    const dataDir = path.dirname(DatabaseConfig.getDbPath());
     try {
       await fs.access(dataDir);
     } catch {
@@ -38,7 +59,7 @@ export class DatabaseConfig {
     await DatabaseConfig.ensureDataDirectory();
 
     try {
-      await fs.access(DatabaseConfig.dbPath);
+      await fs.access(DatabaseConfig.getDbPath());
     } catch {
       // File doesn't exist, create with default data
       const defaultData: DatabaseSchema = {
@@ -80,7 +101,7 @@ export class DatabaseConfig {
       };
 
       await fs.writeFile(
-        DatabaseConfig.dbPath,
+        DatabaseConfig.getDbPath(),
         JSON.stringify(defaultData, null, 2)
       );
     }
@@ -90,12 +111,15 @@ export class DatabaseConfig {
 
   public static async readData(): Promise<DatabaseSchema> {
     await DatabaseConfig.initialize();
-    const data = await fs.readFile(DatabaseConfig.dbPath, 'utf-8');
+    const data = await fs.readFile(DatabaseConfig.getDbPath(), 'utf-8');
     return JSON.parse(data);
   }
 
   public static async writeData(data: DatabaseSchema): Promise<void> {
     await DatabaseConfig.ensureDataDirectory();
-    await fs.writeFile(DatabaseConfig.dbPath, JSON.stringify(data, null, 2));
+    await fs.writeFile(
+      DatabaseConfig.getDbPath(),
+      JSON.stringify(data, null, 2)
+    );
   }
 }
