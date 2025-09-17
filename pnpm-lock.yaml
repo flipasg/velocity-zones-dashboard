@@ -63,6 +63,9 @@ importers:
       '@types/express':
         specifier: ^4.17.21
         version: 4.17.23
+      '@types/express-serve-static-core':
+        specifier: ^4.17.40
+        version: 4.19.6
       '@types/node':
         specifier: ^22.5.4
         version: 22.18.4

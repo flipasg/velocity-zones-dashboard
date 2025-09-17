@@ -1,7 +1,19 @@
 import { CreateRepDto, GetRepsQuery } from '@velocity-zones/shared';
-import { Request, Response } from 'express';
+import type {
+  ParamsDictionary,
+  Request as ExpressRequest,
+  Response as ExpressResponse,
+} from 'express-serve-static-core';
 import { CreateRepUseCase } from '../../application/usecases/CreateRepUseCase';
 import { GetRepsUseCase } from '../../application/usecases/GetRepsUseCase';
+
+type Request = ExpressRequest<
+  ParamsDictionary,
+  any,
+  any,
+  Record<string, unknown>
+>;
+type Response = ExpressResponse;
 
 export class RepController {
   constructor(

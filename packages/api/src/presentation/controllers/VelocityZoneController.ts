@@ -1,5 +1,17 @@
-import { Request, Response } from 'express';
+import type {
+  ParamsDictionary,
+  Request as ExpressRequest,
+  Response as ExpressResponse,
+} from 'express-serve-static-core';
 import { GetZonesUseCase } from '../../application/usecases/GetZonesUseCase';
+
+type Request = ExpressRequest<
+  ParamsDictionary,
+  any,
+  any,
+  Record<string, unknown>
+>;
+type Response = ExpressResponse;
 
 export class VelocityZoneController {
   constructor(private readonly getVelocityZonesUseCase: GetZonesUseCase) {}
