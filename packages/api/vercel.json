@@ -1,4 +1,4 @@
 {
   "installCommand": "pnpm -w install --frozen-lockfile --prod=false",
-  "buildCommand": "pnpm -w turbo run build --filter=@velocity-zones/api"
+  "buildCommand": "echo 'skip build'"
 }
