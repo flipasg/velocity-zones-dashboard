@@ -27,6 +27,55 @@ class VelocityZonesApiServer {
   }
 
   private configureMiddleware(): void {
+    // Normalize Vercel catch-all routing to standard paths
+    if (process.env.VERCEL) {
+      this.app.use((req, _res, next) => {
+        const queryParams = req.query as Record<string, unknown>;
+        const catchAll = (queryParams?.path ?? queryParams?.['...path']) as
+          | string
+          | string[]
+          | undefined;
+
+        if (catchAll) {
+          const segments = Array.isArray(catchAll)
+            ? catchAll
+            : catchAll.split('/');
+          const normalizedPath = `/${segments
+            .filter(Boolean)
+            .map((segment) => decodeURIComponent(segment))
+            .join('/')}`;
+
+          delete queryParams.path;
+          delete queryParams['...path'];
+
+          const remainingEntries = Object.entries(queryParams).filter(
+            ([key, value]) =>
+              value !== undefined &&
+              value !== null &&
+              key !== 'path' &&
+              key !== '...path'
+          );
+
+          const searchParams = new URLSearchParams();
+          for (const [key, value] of remainingEntries) {
+            if (Array.isArray(value)) {
+              for (const item of value) {
+                searchParams.append(key, String(item));
+              }
+            } else {
+              searchParams.append(key, String(value));
+            }
+          }
+
+          const search = searchParams.toString();
+          req.url = `${normalizedPath}${search ? `?${search}` : ''}`;
+          req.originalUrl = req.url;
+        }
+
+        next();
+      });
+    }
+
     // Security middleware
     this.app.use(helmet());
 
