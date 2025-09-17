@@ -50,45 +50,51 @@ class VelocityZonesApiServer {
   }
 
   private configureRoutes(): void {
-    // Health check endpoint
-    this.app.get('/health', (req, res) => {
-      res.status(200).json({
-        status: 'healthy',
-        timestamp: new Date().toISOString(),
-        version: process.env.npm_package_version || '1.0.0',
+    const prefixes = process.env.VERCEL ? ['', '/api'] : ['/api'];
+
+    // Health check(s)
+    for (const prefix of prefixes) {
+      this.app.get(`${prefix}/health`, (req, res) => {
+        res.status(200).json({
+          status: 'healthy',
+          timestamp: new Date().toISOString(),
+          version: process.env.npm_package_version || '1.0.0',
+        });
       });
-    });
+    }
 
-    // Swagger documentation
-    this.app.use(
-      `${this.basePath}/docs`,
-      swaggerUi.serve,
-      swaggerUi.setup(swaggerSpec, {
-        explorer: true,
-        customCss: '.swagger-ui .topbar { display: none }',
-        customSiteTitle: 'Velocity Zones API Documentation',
-      })
-    );
+    // Swagger docs under both prefixes
+    for (const prefix of prefixes) {
+      this.app.use(
+        `${prefix}/docs`,
+        swaggerUi.serve,
+        swaggerUi.setup(swaggerSpec, {
+          explorer: true,
+          customCss: '.swagger-ui .topbar { display: none }',
+          customSiteTitle: 'Velocity Zones API Documentation',
+        })
+      );
 
-    // Swagger JSON endpoint
-    this.app.get(`${this.basePath}/docs.json`, (req, res) => {
-      res.setHeader('Content-Type', 'application/json');
-      res.send(swaggerSpec);
-    });
+      this.app.get(`${prefix}/docs.json`, (req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.send(swaggerSpec);
+      });
+    }
 
-    // API routes
+    // API routes under both prefixes
     const httpRoutes = this.dependencyContainer.getHttpRoutes();
     const repController = this.dependencyContainer.getRepController();
     const velocityZoneController =
       this.dependencyContainer.getVelocityZoneController();
-
     const apiRouter = httpRoutes.configureRoutes(
       repController,
       velocityZoneController
     );
-    this.app.use(`${this.basePath}/v1`, apiRouter);
+    for (const prefix of prefixes) {
+      this.app.use(`${prefix}/v1`, apiRouter);
+    }
 
-    // Catch-all route for undefined endpoints
+    // Catch-all 404
     this.app.use('*', (req, res) => {
       res.status(404).json({
         message: 'Resource not found',
