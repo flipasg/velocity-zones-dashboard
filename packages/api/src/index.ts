@@ -10,11 +10,16 @@ class VelocityZonesApiServer {
   private readonly app: Express;
   private readonly port: number;
   private readonly dependencyContainer: DependencyContainer;
+  private readonly basePath: string;
 
   constructor(port: number = 3001) {
     this.app = express();
     this.port = port;
     this.dependencyContainer = new DependencyContainer();
+    // Vercel serverless functions are mounted at "/api", and the
+    // path forwarded to the handler excludes that prefix. Use
+    // an empty base on Vercel and "/api" locally.
+    this.basePath = process.env.VERCEL ? '' : '/api';
 
     this.configureMiddleware();
     this.configureRoutes();
@@ -56,7 +61,7 @@ class VelocityZonesApiServer {
 
     // Swagger documentation
     this.app.use(
-      '/api/docs',
+      `${this.basePath}/docs`,
       swaggerUi.serve,
       swaggerUi.setup(swaggerSpec, {
         explorer: true,
@@ -66,7 +71,7 @@ class VelocityZonesApiServer {
     );
 
     // Swagger JSON endpoint
-    this.app.get('/api/docs.json', (req, res) => {
+    this.app.get(`${this.basePath}/docs.json`, (req, res) => {
       res.setHeader('Content-Type', 'application/json');
       res.send(swaggerSpec);
     });
@@ -81,7 +86,7 @@ class VelocityZonesApiServer {
       repController,
       velocityZoneController
     );
-    this.app.use('/api/v1', apiRouter);
+    this.app.use(`${this.basePath}/v1`, apiRouter);
 
     // Catch-all route for undefined endpoints
     this.app.use('*', (req, res) => {
