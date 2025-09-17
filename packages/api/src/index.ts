@@ -1,5 +1,5 @@
 import cors from 'cors';
-import express from 'express';
+import express, { type Express } from 'express';
 import helmet from 'helmet';
 import swaggerUi from 'swagger-ui-express';
 import { DependencyContainer } from './DependencyContainer';
@@ -7,7 +7,7 @@ import { DatabaseConfig } from './infrastructure/database/DatabaseConfig';
 import { swaggerSpec } from './infrastructure/swagger/swaggerConfig';
 
 class VelocityZonesApiServer {
-  private readonly app: express.Application;
+  private readonly app: Express;
   private readonly port: number;
   private readonly dependencyContainer: DependencyContainer;
 
